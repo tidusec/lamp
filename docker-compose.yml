@@ -2,7 +2,7 @@ version: "2.2"
 
 services:
   latex:
-    image: faust.cs.fau.de:5000/lamp
+    build: .
     ports:
       - 1337:1337
     volumes:

@@ -1,18 +1,17 @@
-FROM alpine
 
-RUN apk add texlive-xetex \
-    texmf-dist-latexextra \
-    mysql-client \
-	mariadb-connector-c \
-    socat \
-    coreutils \
-    xxd \
-    python3 \
-    uv
+FROM python:3.14
 
 
-WORKDIR /tmp
-COPY entrypoint.sh /entrypoint.sh
-COPY cleanup.sh /cleanup.sh
-CMD ["uv install -r requirements.txt"]
-CMD ["EXEC:/entrypoint.sh"]
+WORKDIR /code
+
+
+COPY ./requirements.txt /code/requirements.txt
+
+
+RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
+
+
+COPY ./app /code/app
+
+
+CMD ["fastapi", "run", "app/main.py", "--port", "80"]
