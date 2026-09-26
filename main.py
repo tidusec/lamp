@@ -70,7 +70,7 @@ class User(SQLModel, table=True):
 
 
 
-app.mount("/code/app/www", StaticFiles(directory="www"), name="static")
+app.mount("/www", StaticFiles(directory="/www"), name="static")
 
 
 templates = Jinja2Templates(directory="templates")
