@@ -9,8 +9,10 @@ from sqlmodel import Field, Session, SQLModel, create_engine, select
 from datetime import datetime
 import pandas as pd
 import time
+from sqlalchemy import text
 
-time.sleep(10)
+
+time.sleep(4)
 app = FastAPI()
 
 connection_url = f"mysql+pymysql://root:root@mariadb/lamp?charset=utf8mb4"
@@ -36,7 +38,7 @@ SessionDep = Annotated[Session, Depends(get_session)]
 def on_startup():
     create_db_and_tables()
     con = engine.connect()
-    con.execute("CREATE USER IF NOT EXISTS 'nonprivileged' IDENTIFIED BY 'nonprivileged';")
+    con.execute(text("CREATE USER IF NOT EXISTS 'nonprivileged' IDENTIFIED BY 'nonprivileged';"))
     pd.read_sql("GRANT INSERT, UPDATE, SELECT ON lamp.ships TO 'nonprivileged';", con)
     pd.read_sql("GRANT INSERT, UPDATE, SELECT ON lamp.components TO 'nonprivileged';", con)
     pd.read_sql("GRANT INSERT, SELECT ON lamp.connections TO 'nonprivileged';")
