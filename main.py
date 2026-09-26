@@ -120,7 +120,7 @@ async def root(request: Request, session: SessionDep):
 
 
 
-            components = ""
+            components_html = ""
             #opBouw = '<div class="line \state" data-x1="\coords[0]" data-y1="\coords[1]" data-x2="\coords[2]" data-y2="\coords[3]"></div>'
 
             shipname = first.shipname
@@ -140,7 +140,6 @@ async def root(request: Request, session: SessionDep):
                     <div id="components"> <input id="component-light" type="radio" name="component" value="light" checked /> <label for="component-light">Light</label> <input id="component-button" type="radio" name="component" value="button"> <label for="component-button">Button</label> <input id="component-source" type="radio" name="component" value="source"> <label for="component-source">Source</label> <br /> <label><input type="checkbox" id="connect-mode" /> Connect mode</label> </div>
                     <div id="canvas" data-tooltip="Click to add"> 
                     </div>
-                    {components}
                 </div>
             </div>
 
