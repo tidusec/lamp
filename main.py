@@ -121,7 +121,7 @@ async def root(request: Request, session: SessionDep):
 
 
             components = ""
-            opBouw = '<div class="line \state" data-x1="\coords[0]" data-y1="\coords[1]" data-x2="\coords[2]" data-y2="\coords[3]"></div>'
+            #opBouw = '<div class="line \state" data-x1="\coords[0]" data-y1="\coords[1]" data-x2="\coords[2]" data-y2="\coords[3]"></div>'
 
             shipname = first.shipname
             c1 = alias(Components)
