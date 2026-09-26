@@ -8,6 +8,9 @@ from pydantic import BaseModel
 from sqlmodel import Field, Session, SQLModel, create_engine, select
 from datetime import datetime
 import pandas as pd
+import time
+
+time.sleep(10)
 app = FastAPI()
 
 connection_url = f"mysql+pymysql://root:root@mariadb/lamp?charset=utf8mb4"
