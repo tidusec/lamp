@@ -78,7 +78,7 @@ class User(SQLModel, table=True):
 app.mount("/www", StaticFiles(directory="/www"), name="static")
 
 
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory="/templates")
 @app.get("/")
 async def root(request: Request):
     #ifLoggedIn():
