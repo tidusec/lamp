@@ -189,6 +189,8 @@ async def rootPost(request: Request, session: SessionDep, data: Annotated[MainPo
     if authenticated:
         user = session.query(User).filter_by(session_id=authenticated)
         first: User = user.first()
+        if data.action != "add":
+            return RedirectResponse("/", status_code=HTTP_302_FOUND)
         newComponent = Components(
             x=float(data.x),
             y=float(data.y),
