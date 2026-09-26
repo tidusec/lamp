@@ -47,6 +47,11 @@ def on_startup():
     con.close()
 
 
+class User(SQLModel, table=True):
+    username: str = Field(default="", primary_key=True)
+    password: str = Field(default="")
+    session_id: str = Field(default="")
+    shipname: str = Field(default="")
 
 class Components(SQLModel, table=True):
     id: int = Field(default=None, primary_key=True)
@@ -60,12 +65,6 @@ class Components(SQLModel, table=True):
 class Connections(SQLModel, table=True):
     src: int = Field(default=None, primary_key=True)
     dst: int = Field(default=None, index=True, primary_key=True)
-
-class User(SQLModel, table=True):
-    username: str = Field(default="", primary_key=True)
-    password: str = Field(default="")
-    session_id: str = Field(default="")
-    shipname: str = Field(default="")
 
 
 
