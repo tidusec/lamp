@@ -12,6 +12,8 @@ import time
 from sqlalchemy import text
 import random
 import string
+from starlette.status import HTTP_302_FOUND,HTTP_303_SEE_OTHER
+
 
 time.sleep(4)
 app = FastAPI()
@@ -199,7 +201,7 @@ async def rootPost(request: Request, session: SessionDep, data: Annotated[MainPo
         session.commit()
         session.refresh(newComponent)
 
-        return RedirectResponse("/")
+        return RedirectResponse("/",status_code=HTTP_303_SEE_OTHER)
 
 
         if first:
@@ -220,7 +222,7 @@ async def rootPost(request: Request, session: SessionDep, data: Annotated[MainPo
 
             """
 
-    return RedirectResponse("/")
+    return RedirectResponse("/",status_code=HTTP_303_SEE_OTHER)
 
 
 @app.get("/register")
@@ -432,6 +434,6 @@ async def logout(request: Request, session: SessionDep):
     # buttons = """
 
     if authenticated:
-        response =  RedirectResponse("/")
+        response =  RedirectResponse("/",status_code=HTTP_303_SEE_OTHER)
         response.set_cookie(key="Session", value="")
         return response
