@@ -201,7 +201,7 @@ async def rootPost(request: Request, session: SessionDep, data: Annotated[MainPo
         session.commit()
         session.refresh(newComponent)
 
-        return RedirectResponse("/",status_code=HTTP_303_SEE_OTHER)
+        return RedirectResponse("/",status_code=HTTP_302_FOUND)
 
 
         if first:
@@ -222,7 +222,7 @@ async def rootPost(request: Request, session: SessionDep, data: Annotated[MainPo
 
             """
 
-    return RedirectResponse("/",status_code=HTTP_303_SEE_OTHER)
+    return RedirectResponse("/",status_code=HTTP_302_FOUND)
 
 
 @app.get("/register")
@@ -434,6 +434,6 @@ async def logout(request: Request, session: SessionDep):
     # buttons = """
 
     if authenticated:
-        response =  RedirectResponse("/",status_code=HTTP_303_SEE_OTHER)
+        response =  RedirectResponse("/",status_code=HTTP_302_FOUND)
         response.set_cookie(key="Session", value="")
         return response
