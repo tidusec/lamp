@@ -21,7 +21,6 @@ services:
       MARIADB_ROOT_PASSWORD: root
       MARIADB_DATABASE: lamp
     volumes:
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
       - db:/var/lib/mysql
 
 volumes:
