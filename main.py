@@ -306,7 +306,7 @@ async def registerPost(request: Request, data: Annotated[Register, Form()], sess
 
     session.add(registeredUser)
     session.commit()
-    session.refresh(User)
+    session.refresh(registeredUser)
 
     # if success
     content = """
