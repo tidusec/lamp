@@ -36,11 +36,12 @@ SessionDep = Annotated[Session, Depends(get_session)]
 def on_startup():
     create_db_and_tables()
     con = engine.connect()
-    pd.read_sql("CREATE USER IF NOT EXISTS 'nonprivileged' IDENTIFIED BY 'nonprivileged';", con)
+    con.execute("CREATE USER IF NOT EXISTS 'nonprivileged' IDENTIFIED BY 'nonprivileged';")
     pd.read_sql("GRANT INSERT, UPDATE, SELECT ON lamp.ships TO 'nonprivileged';", con)
     pd.read_sql("GRANT INSERT, UPDATE, SELECT ON lamp.components TO 'nonprivileged';", con)
     pd.read_sql("GRANT INSERT, SELECT ON lamp.connections TO 'nonprivileged';")
     pd.read_sql("FLUSH PRIVILEGES;")
+    con.close()
 
 
 class Ships(SQLModel, table=True):
