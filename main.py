@@ -9,22 +9,22 @@ from sqlmodel import Field, Session, SQLModel, create_engine, select
 from datetime import datetime
 import pandas as pd
 import time
-from sqlalchemy import text
+from sqlalchemy import text, alias
 import random
 import string
-from starlette.status import HTTP_302_FOUND,HTTP_303_SEE_OTHER
-
+from starlette.status import HTTP_302_FOUND, HTTP_303_SEE_OTHER
 
 time.sleep(4)
 app = FastAPI()
 
 connection_url = f"mysql+pymysql://root:root@mariadb/lamp?charset=utf8mb4"
 
-
 engine = create_engine(connection_url)
+
 
 def create_db_and_tables():
     SQLModel.metadata.create_all(engine)
+
 
 # Code above omitted 👆
 
@@ -34,6 +34,7 @@ def get_session():
 
 
 SessionDep = Annotated[Session, Depends(get_session)]
+
 
 # Code below omitted 👇
 
@@ -54,35 +55,35 @@ class User(SQLModel, table=True):
     session_id: str = Field(default="")
     shipname: str = Field(default="")
 
+
 class Components(SQLModel, table=True):
     id: int = Field(default=None, primary_key=True)
-    type: str|None = Field(index=True)
-    x: float|None = Field(index=True)
-    y: float|None = Field(index=True)
-    state: int|None = Field()
+    type: str | None = Field(index=True)
+    x: float | None = Field(index=True)
+    y: float | None = Field(index=True)
+    state: int | None = Field()
     properties: str = Field(default='1')
     ship: str = Field()
+
 
 class Connections(SQLModel, table=True):
     src: int = Field(default=None, primary_key=True)
     dst: int = Field(default=None, index=True, primary_key=True)
 
 
-
-
 app.mount("/www", StaticFiles(directory="/www"), name="static")
 
-
 templates = Jinja2Templates(directory="/templates")
+
+
 @app.get("/")
 async def root(request: Request, session: SessionDep):
-    #ifLoggedIn():
-        # addSubmitForm
-        # title = 'Ship "' + shipName + '"'
+    # ifLoggedIn():
+    # addSubmitForm
+    # title = 'Ship "' + shipName + '"'
     # else:
     #     title = " LAMP"
     authenticated = request.cookies.get("Session")
-
 
     title = "LAMP"
     overviewButton = """
@@ -97,7 +98,7 @@ async def root(request: Request, session: SessionDep):
     overviewButtons = overviewButton
     buttons = loginButton + registerButton
 
-    #ifLoggedIn():
+    # ifLoggedIn():
     # buttons = """
     # <a class="menu-item" href="/logout">Logout</a>
     # """
@@ -117,10 +118,18 @@ async def root(request: Request, session: SessionDep):
                 <a class="menu-item" href="/logout">Logout</a>
             """
 
-            #components = ""
-            #opBouw = '<div class="line \state" data-x1="\coords[0]" data-y1="\coords[1]" data-x2="\coords[2]" data-y2="\coords[3]"></div>'
 
-            #session.query(Components).filter_by(ship="")
+
+            components = ""
+            opBouw = '<div class="line \state" data-x1="\coords[0]" data-y1="\coords[1]" data-x2="\coords[2]" data-y2="\coords[3]"></div>'
+
+            shipname = first.shipname
+            c1 = alias(Components)
+            c2 = alias(Components)
+            query = session.query(Connections).join(c1, Components.id).join(c2, Components.id).where(c1.ship == shipname).where(c2.ship == shipname)
+            for row in query:
+                print(row)
+
 
             content = f"""
             <div id="content">
@@ -131,19 +140,15 @@ async def root(request: Request, session: SessionDep):
                     <div id="components"> <input id="component-light" type="radio" name="component" value="light" checked /> <label for="component-light">Light</label> <input id="component-button" type="radio" name="component" value="button"> <label for="component-button">Button</label> <input id="component-source" type="radio" name="component" value="source"> <label for="component-source">Source</label> <br /> <label><input type="checkbox" id="connect-mode" /> Connect mode</label> </div>
                     <div id="canvas" data-tooltip="Click to add"> 
                     </div>
+                    {components}
                 </div>
             </div>
-            
+
             """
 
-
-
-
-
-
-
     return templates.TemplateResponse(
-        request=request, name="lamp.html", context={"title": title, "buttons": buttons, "overviewButtons": overviewButtons, "content": content}
+        request=request, name="lamp.html",
+        context={"title": title, "buttons": buttons, "overviewButtons": overviewButtons, "content": content}
     )
 
 
@@ -152,6 +157,10 @@ class MainPost(BaseModel):
     x: str = ""
     y: str = ""
     typ: str = ""
+    left: str = ""
+    right: str = ""
+
+
 @app.post("/")
 async def rootPost(request: Request, session: SessionDep, data: Annotated[MainPost, Form()]):
     # ifLoggedIn():
@@ -189,22 +198,47 @@ async def rootPost(request: Request, session: SessionDep, data: Annotated[MainPo
     if authenticated:
         user = session.query(User).filter_by(session_id=authenticated)
         first: User = user.first()
-        if data.action != "add":
-            return RedirectResponse("/", status_code=HTTP_302_FOUND)
-        newComponent = Components(
-            x=float(data.x),
-            y=float(data.y),
-            type=data.typ,
-            state=int("source" == data.typ),
-            ship=first.shipname,
-        )
+        if data.action == "add":
+            numcomponents = session.query(Components).filter_by(ship=first.shipname).count()
+            if numcomponents < 50:
+                newComponent = Components(
+                    x=float(data.x),
+                    y=float(data.y),
+                    type=data.typ,
+                    state=int("source" == data.typ),
+                    ship=first.shipname,
+                )
 
-        session.add(newComponent)
-        session.commit()
-        session.refresh(newComponent)
+                session.add(newComponent)
+                session.commit()
+                session.refresh(newComponent)
+        elif data.action == "connect":
+            shipname = first.shipname
+            newConnection = Connections(
+                src=int(data.left),
+                dst=int(data.right),
+            )
+            session.add(newConnection)
+            session.commit()
+            session.refresh(newConnection)
+        elif data.action == "toggle":
+            shipname = first.shipname
+            component = session.query(Components).filter_by(ship=first.shipname).first()
+            if component.state == 0:
+                component.state = 1
+            else:
+                component.state = 0
+            session.add(component)
+            session.commit()
+            session.refresh(component)
 
-        return RedirectResponse("/",status_code=HTTP_302_FOUND)
+        elif data.action == "tick":
+            shipname = first.shipname
+            query = f"UPDATE components c LEFT JOIN (SELECT w.dst AS id, MAX(s.state) AS anyOn FROM connections w JOIN components s ON s.id = w.src WHERE s.ship = {shipname} GROUP BY w.dst) agg ON agg.id = c.id SET c.state = CASE c.type WHEN 'light' THEN COALESCE(agg.anyOn, 0) WHEN 'button' THEN IF(c.properties = 'on' AND COALESCE(agg.anyOn, 0) = 1, 1, 0) ELSE c.state END WHERE c.ship = {shipname} AND c.type <> 'source'"
+            session.connection().execute(text(query))
 
+
+        return RedirectResponse("/", status_code=HTTP_302_FOUND)
 
         if first:
             buttons = """
@@ -224,7 +258,7 @@ async def rootPost(request: Request, session: SessionDep, data: Annotated[MainPo
 
             """
 
-    return RedirectResponse("/",status_code=HTTP_302_FOUND)
+    return RedirectResponse("/", status_code=HTTP_302_FOUND)
 
 
 @app.get("/register")
@@ -252,7 +286,7 @@ async def registerGet(request: Request):
     # ifLoggedIn():
     # redirect("/")
 
-    response =  templates.TemplateResponse(
+    response = templates.TemplateResponse(
         request=request, name="lamp.html",
         context={"title": title, "buttons": buttons, "overviewButtons": overviewButtons, "content": content}
     )
@@ -290,14 +324,14 @@ async def loginGet(request: Request):
         context={"title": title, "buttons": buttons, "overviewButtons": overviewButtons, "content": content}
     )
 
+
 class Login(BaseModel):
     username: str = ""
     password: str = ""
 
+
 @app.post("/login")
 async def loginPost(request: Request, data: Annotated[Login, Form()], session: SessionDep):
-
-
     title = "LAMP"
 
     overviewButton = """
@@ -315,10 +349,8 @@ async def loginPost(request: Request, data: Annotated[Login, Form()], session: S
     user = session.get(User, data.username)
     logged_in = True
 
-    if not user or user.password != data.password:
+    if not user or user.password != data.password[:200]:
         logged_in = False
-
-
 
     # if success
     content = """
@@ -328,7 +360,6 @@ async def loginPost(request: Request, data: Annotated[Login, Form()], session: S
         <meta http-equiv="Refresh" content="2;url=/" />
     </div>
         """
-
 
     # if fail
     if not logged_in:
@@ -342,7 +373,7 @@ async def loginPost(request: Request, data: Annotated[Login, Form()], session: S
     # ifLoggedIn():
     # redirect("/")
 
-    response =  templates.TemplateResponse(
+    response = templates.TemplateResponse(
         request=request, name="lamp.html",
         context={"title": title, "buttons": buttons, "overviewButtons": overviewButtons, "content": content}
     )
@@ -357,6 +388,8 @@ class Register(BaseModel):
     username: str = ""
     password: str = ""
     shipname: str = ""
+
+
 @app.post("/register")
 async def registerPost(request: Request, data: Annotated[Register, Form()], session: SessionDep):
     title = "LAMP"
@@ -376,20 +409,20 @@ async def registerPost(request: Request, data: Annotated[Register, Form()], sess
     success = True
     if alreadyRegisteredUser:
         success = False
+    else:
+        length = 8
+        random_string = ''.join(random.choices(string.ascii_letters + string.digits, k=length))
 
-    length = 8
-    random_string = ''.join(random.choices(string.ascii_letters + string.digits, k=length))
+        registeredUser: User = User(
+            username=data.username,
+            password=data.password[:200],
+            shipname=data.shipname,
+            session_id=random_string,
+        )
 
-    registeredUser: User = User(
-        username=data.username,
-        password=data.password,
-        shipname=data.shipname,
-        session_id=random_string,
-    )
-
-    session.add(registeredUser)
-    session.commit()
-    session.refresh(registeredUser)
+        session.add(registeredUser)
+        session.commit()
+        session.refresh(registeredUser)
 
     # if success
     content = """
@@ -411,12 +444,15 @@ async def registerPost(request: Request, data: Annotated[Register, Form()], sess
     # ifLoggedIn():
     # redirect("/")
 
-    response =  templates.TemplateResponse(
+    response = templates.TemplateResponse(
         request=request, name="lamp.html",
         context={"title": title, "buttons": buttons, "overviewButtons": overviewButtons, "content": content}
     )
-    response.set_cookie(key="Session", value=registeredUser.session_id)
+    if success:
+        response.set_cookie(key="Session", value=registeredUser.session_id)
+
     return response
+
 
 print("Running server")
 
@@ -430,12 +466,10 @@ async def logout(request: Request, session: SessionDep):
     #     title = " LAMP"
     authenticated = request.cookies.get("Session")
 
-
-
     # ifLoggedIn():
     # buttons = """
 
     if authenticated:
-        response =  RedirectResponse("/",status_code=HTTP_302_FOUND)
+        response = RedirectResponse("/", status_code=HTTP_302_FOUND)
         response.set_cookie(key="Session", value="")
         return response
