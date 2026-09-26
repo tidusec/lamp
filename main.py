@@ -266,6 +266,9 @@ async def loginPost(request: Request, data: Annotated[Login, Form()], session: S
         request=request, name="lamp.html",
         context={"title": title, "buttons": buttons, "overviewButtons": overviewButtons, "content": content}
     )
+    if not logged_in:
+        return response
+
     response.set_cookie(key="Session", value=user.session_id)
     return response
 
