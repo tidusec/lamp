@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Request, Depends, Response
-from starlette.responses import HTMLResponse
+from starlette.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from typing import Annotated
@@ -123,9 +123,9 @@ async def root(request: Request, session: SessionDep):
                 <a class="menu-item" href="/logout">Logout</a>
             """
 
-            content = """
+            content = f"""
             <div id="content">
-                <h1> Ship "pvq"
+                <h1> Ship "{first.shipname}"
                     <form method="POST" style="display: contents"><input type="hidden" name="action" value="tick" /><input type="submit" value="&#8635; Refresh" style="width: max-content; padding: 0 0.5rem; margin: 0" /></form>
                 </h1>
                 <div id="ship-wrapper">
@@ -336,3 +336,23 @@ async def registerPost(request: Request, data: Annotated[Register, Form()], sess
     return response
 
 print("Running server")
+
+
+@app.get("/logout")
+async def logout(request: Request, session: SessionDep):
+    # ifLoggedIn():
+    # addSubmitForm
+    # title = 'Ship "' + shipName + '"'
+    # else:
+    #     title = " LAMP"
+    authenticated = request.cookies.get("Session")
+
+
+
+    # ifLoggedIn():
+    # buttons = """
+
+    if authenticated:
+        response =  RedirectResponse("/")
+        response.set_cookie(key="Session", value="")
+        return response
