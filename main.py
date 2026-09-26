@@ -262,3 +262,5 @@ async def registerPost(request: Request):
         request=request, name="lamp.html",
         context={"title": title, "buttons": buttons, "overviewButtons": overviewButtons, "content": content}
     )
+
+print("Running server")
