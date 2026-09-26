@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title> {{ title }} </title>
+    <link rel="stylesheet" href="../www/global.css">
+    <link rel="stylesheet" href="../www/index.css">
+    <script src="../www/index.js"></script>
+</head>
+<body>
+    <img src="../www/logo.svg" width="100%" style="aspect-ratio: 2000 / 100; background: var(--background-header-image); border-bottom: 1px solid var(--background-header-border)" />
+  <div id="menu">
+      {{ overviewButtons|safe}}
+    <div class="spacer"></div>
+      {{ buttons|safe }}
+  </div>
+
+    {{ content|safe}}
+</body>
+</html>
