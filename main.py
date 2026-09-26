@@ -47,12 +47,6 @@ def on_startup():
     con.close()
 
 
-class Ships(SQLModel, table=True):
-    id: int = Field(default=None, primary_key=True)
-    username: str = Field(index=True, unique=True)
-    numComponents: int = Field(default=0)
-    created: datetime = Field(default=datetime.now())
-
 
 class Components(SQLModel, table=True):
     id: int = Field(default=None, primary_key=True)
@@ -61,7 +55,7 @@ class Components(SQLModel, table=True):
     y: float|None = Field(index=True)
     state: int|None = Field()
     properties: str = Field(default='1')
-    ship: int = Field(foreign_key="ships.id", ondelete="CASCADE")
+    ship: str = Field(foreign_key="user.shipname", ondelete="CASCADE")
 
 class Connections(SQLModel, table=True):
     src: int = Field(default=None, primary_key=True)
@@ -123,6 +117,12 @@ async def root(request: Request, session: SessionDep):
                 <a class="menu-item" href="/logout">Logout</a>
             """
 
+            #components = ""
+            #opBouw = '<div class="line \state" data-x1="\coords[0]" data-y1="\coords[1]" data-x2="\coords[2]" data-y2="\coords[3]"></div>'
+
+            #session.query(Components).filter_by(ship="")
+
+
             content = f"""
             <div id="content">
                 <h1> Ship "{first.shipname}"
@@ -130,7 +130,9 @@ async def root(request: Request, session: SessionDep):
                 </h1>
                 <div id="ship-wrapper">
                     <div id="components"> <input id="component-light" type="radio" name="component" value="light" checked /> <label for="component-light">Light</label> <input id="component-button" type="radio" name="component" value="button"> <label for="component-button">Button</label> <input id="component-source" type="radio" name="component" value="source"> <label for="component-source">Source</label> <br /> <label><input type="checkbox" id="connect-mode" /> Connect mode</label> </div>
-                    <div id="canvas" data-tooltip="Click to add"> </div>
+                    <div id="canvas" data-tooltip="Click to add"> 
+                    "{components}"
+                    </div>
                 </div>
             </div>
             
@@ -145,6 +147,84 @@ async def root(request: Request, session: SessionDep):
     return templates.TemplateResponse(
         request=request, name="lamp.html", context={"title": title, "buttons": buttons, "overviewButtons": overviewButtons, "content": content}
     )
+
+
+class MainPost(BaseModel):
+    action: str = ""
+    x: str = ""
+    y: str = ""
+    typ: str = ""
+@app.post("/")
+async def rootPost(request: Request, session: SessionDep, data: Annotated[MainPost, Form()]):
+    # ifLoggedIn():
+    # addSubmitForm
+    # title = 'Ship "' + shipName + '"'
+    # else:
+    #     title = " LAMP"
+    authenticated = request.cookies.get("Session")
+
+    title = "LAMP"
+    overviewButton = """
+    <a class="menu-item highlight" href="/">Overview</a>
+    """
+    loginButton = """
+    <a class="menu-item" href="/login">Login</a>
+    """
+    registerButton = """
+    <a class="menu-item" href="/register">Register</a>
+    """
+    overviewButtons = overviewButton
+    buttons = loginButton + registerButton
+
+    # ifLoggedIn():
+    # buttons = """
+    # <a class="menu-item" href="/logout">Logout</a>
+    # """
+
+    content = """
+            <div id="content">
+        <h1> LAMP</h1>
+        <p> <a href="/login">Log in</a> or <a href="/register">register</a> </p>
+    </div>
+            """
+
+    if authenticated:
+        user = session.query(User).filter_by(session_id=authenticated)
+        first: User = user.first()
+        newComponent = Components(
+            x=float(data.x),
+            y=float(data.y),
+            type=data.typ,
+            state=int("source" == data.typ),
+            ship=first.shipname,
+        )
+
+        session.add(newComponent)
+        session.commit()
+        session.refresh(newComponent)
+
+        return RedirectResponse("/")
+
+
+        if first:
+            buttons = """
+                <a class="menu-item" href="/logout">Logout</a>
+            """
+
+            content = f"""
+            <div id="content">
+                <h1> Ship "{first.shipname}"
+                    <form method="POST" style="display: contents"><input type="hidden" name="action" value="tick" /><input type="submit" value="&#8635; Refresh" style="width: max-content; padding: 0 0.5rem; margin: 0" /></form>
+                </h1>
+                <div id="ship-wrapper">
+                    <div id="components"> <input id="component-light" type="radio" name="component" value="light" checked /> <label for="component-light">Light</label> <input id="component-button" type="radio" name="component" value="button"> <label for="component-button">Button</label> <input id="component-source" type="radio" name="component" value="source"> <label for="component-source">Source</label> <br /> <label><input type="checkbox" id="connect-mode" /> Connect mode</label> </div>
+                    <div id="canvas" data-tooltip="Click to add"> </div>
+                </div>
+            </div>
+
+            """
+
+    return RedirectResponse("/")
 
 
 @app.get("/register")
