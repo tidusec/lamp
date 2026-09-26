@@ -8,11 +8,8 @@ services:
     volumes:
       - ./srv:/srv:ro
       - storage:/storage
-  cleanup:
-    image: faust.cs.fau.de:5000/lamp
-    volumes:
-      - ./srv:/srv:ro
-      - storage:/storage
+    depends_on:
+      - mariadb
   redis:
     image: redis
   mariadb:
