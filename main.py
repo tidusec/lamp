@@ -120,7 +120,6 @@ async def root(request: Request, session: SessionDep):
 
             #session.query(Components).filter_by(ship="")
 
-
             content = f"""
             <div id="content">
                 <h1> Ship "{first.shipname}"
@@ -129,7 +128,6 @@ async def root(request: Request, session: SessionDep):
                 <div id="ship-wrapper">
                     <div id="components"> <input id="component-light" type="radio" name="component" value="light" checked /> <label for="component-light">Light</label> <input id="component-button" type="radio" name="component" value="button"> <label for="component-button">Button</label> <input id="component-source" type="radio" name="component" value="source"> <label for="component-source">Source</label> <br /> <label><input type="checkbox" id="connect-mode" /> Connect mode</label> </div>
                     <div id="canvas" data-tooltip="Click to add"> 
-                    "{components}"
                     </div>
                 </div>
             </div>
