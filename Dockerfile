@@ -15,4 +15,4 @@ COPY . /code/app
 COPY www /www
 
 
-CMD ["fastapi", "run", "app/main.py", "--port", "80"]
+CMD ["fastapi", "run", "app/main.py", "--port", "1337"]
