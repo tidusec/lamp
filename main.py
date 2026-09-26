@@ -40,7 +40,6 @@ def on_startup():
     create_db_and_tables()
     con = engine.connect()
     con.execute(text("CREATE USER IF NOT EXISTS 'nonprivileged' IDENTIFIED BY 'nonprivileged';"))
-    con.execute(text("GRANT INSERT, UPDATE, SELECT ON lamp.ships TO 'nonprivileged';"))
     con.execute(text("GRANT INSERT, UPDATE, SELECT ON lamp.components TO 'nonprivileged';"))
     con.execute(text("GRANT INSERT, SELECT ON lamp.connections TO 'nonprivileged';"))
     con.execute(text("FLUSH PRIVILEGES;"))
