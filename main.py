@@ -60,7 +60,7 @@ class Components(SQLModel, table=True):
     y: float|None = Field(index=True)
     state: int|None = Field()
     properties: str = Field(default='1')
-    ship: str = Field(ondelete="CASCADE")
+    ship: str = Field()
 
 class Connections(SQLModel, table=True):
     src: int = Field(default=None, primary_key=True)
